@@ -1,0 +1,36 @@
+
+/**
+* @author Josep
+* Auto Generate By Pirates Generator
+* #date#
+* #desc#
+*/
+
+namespace App\Http\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class #name# extends Model
+{
+    use SoftDeletes;
+
+    protected $table = '#table_name#';
+    protected $primaryKey = '#table_pk#';
+    public $timestamps = false;
+
+    public function attributesLabel($key='')
+    {
+        $attributes = #label#
+        if (!empty($key) && isset($attributes[$key])) {
+            return $attributes[$key];
+        } else {
+            return $attributes;
+        }
+    }
+
+    public function search($paginate=10, $condition=array())
+    {
+        return app()->make('PGV')->search($paginate, '\App\Http\Models\#name#', '', $condition);
+    }
+}
