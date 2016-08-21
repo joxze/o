@@ -9,6 +9,7 @@
 
     <link href="{{ asset('/assets/o/library/bootstrap-3.3.7/dist/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('/assets/o/js/jquery-ui-1.11.4.custom/jquery-ui.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('/assets/o/library/DataTables-1.10.12/media/css/dataTables.bootstrap.min.css') }}" rel="stylesheet">
 </head>
 <body id="app-layout">
     <nav class="navbar navbar-default navbar-static-top">
@@ -64,6 +65,8 @@
     <script src="{{ asset('/assets/o/js/jquery-ui-1.11.4.custom/jquery-ui.min.js') }}"></script>
     <script src="{{ asset('/assets/o/js/piratesgridview.js') }}"></script>
     <script src="{{ asset('/assets/o/js/formmultiplerow.js') }}"></script>
+    <script src="{{ asset('/assets/o/library/DataTables-1.10.12/media/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('/assets/o/library/DataTables-1.10.12/media/js/dataTables.bootstrap.min.js') }}"></script>
     <script type="text/javascript">
         $(".datepicker").datepicker({
             defaultDate: "+1w",
@@ -72,7 +75,8 @@
             onClose: function( selectedDate ) {
             $( ".to" ).datepicker( "option", "minDate", selectedDate );
             }
-        }).attr('readOnly', 'readOnly');;
+        }).attr("readOnly", "readOnly");
+        $("#data-table").DataTable();
     </script>
     @yield('script')
 </body>
