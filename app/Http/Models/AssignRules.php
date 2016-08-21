@@ -4,16 +4,16 @@ namespace App\Http\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Rules extends Model
+class AssignRules extends Model
 {
-    protected $table = 'rules';
+    protected $table = 'assign_rules';
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'name', 'status'
+        'assign_id', 'rules_id'
     ];
 
     /**
@@ -27,15 +27,15 @@ class Rules extends Model
 
     public function search($paginate=10, $condition=array(), $with='')
     {
-        return app()->make('PGV')->search($paginate, 'App\Http\Models\Rules', '', $condition, $with);
+        return app()->make('PGV')->search($paginate, 'App\Http\Models\AssignRules', '', $condition, $with);
     }
 
     public function attributesLabel($key='')
     {
         $attributes = array(
-            'name' => 'Name',
-            'status' => 'Status',
-            'id' => 'Rules Id',
+            'assign_id' => 'Assign',
+            'rules_id' => 'Rules',
+            'id' => 'Id',
         );
         if (!empty($key) && isset($attributes[$key])) {
             return $attributes[$key];
@@ -44,23 +44,14 @@ class Rules extends Model
         }
     }
 
-    public function getStatusAttribute($status)
+    public function rules()
     {
-        return !empty($status) ? 'Active' : 'Non Active';
-    }
-
-    public function user()
-    {
-        return $this->hasMany('App\User');
-    }
-
-    public function assignRules()
-    {
-        return $this->hasMany('App\Http\Models\AssignRules');
+        return $this->belongsTo('App\Http\Models\Rules');
     }
 
     public function assign()
     {
-        return $this->hasManyThrough('App\Http\Models\Assign', 'App\Http\Models\AssignRules', 'rules_id', 'id');
+        // return $this->hasOne('App\Http\Models\Assign');
+        return $this->belongsTo('App\Http\Models\Assign');
     }
 }

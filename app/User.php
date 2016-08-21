@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
+    public $rulesAdmin = 1;
     /**
      * The attributes that are mass assignable.
      *

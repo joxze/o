@@ -24,8 +24,9 @@ class PiratesGridView
      *      'value'     =>
      *   ],
      * ]
+     * @param string    $with   for relation query only for model
      */
-    public function search($paginate=10, $modelName='', $tableName='', $condition=array())
+    public function search($paginate=10, $modelName='', $tableName='', $condition=array(), $with='')
     {
         if (!empty($paginate) && ( !empty($modelName) || !empty($tableName))) {
             $search = app()->make('Helpers')->getPost('search');
@@ -35,6 +36,9 @@ class PiratesGridView
                 $model = DB::table($tableName);
             } elseif(!empty($modelName) && is_string($modelName)) { //Use ORM
                 $model = $modelName::query();
+                if (!empty($with)) {
+                    $model->with($with);
+                }
             }
             if (!empty($condition) && is_array($condition)) {
                 foreach ($condition as $kCondition => $vCondition) {
@@ -166,7 +170,9 @@ class PiratesGridView
             $model = !empty($setting['model']) ? $setting['model'] : '';
             $arrTitle = array();
             foreach ($columns as $kColumn => $vColumn) {
-                $arrTitle[] = $this->generateTitleTable($vColumn, $model);
+                if ($kColumn !== 'color') {
+                    $arrTitle[] = $this->generateTitleTable($vColumn, $model);
+                }
             }
 
             if (!empty($arrTitle) && is_array($arrTitle)) {
@@ -252,32 +258,34 @@ class PiratesGridView
             && is_array($columns)) {
             $filterColumn = array();
             foreach ($columns as $kColumn => $vColumn) {
-                if (!isset($vColumn['filter']) || $vColumn['filter'] !== false) {
-                    $columnName = $this->getColumnName($vColumn);
-                    $detaultAttributes = array(
-                        'class' => 'form-control pgv-search',
-                        'data-name' => $columnName
-                    );
-                    if (is_string($vColumn)) {
-                        $filterColumn[] = app()->make('DOM')->create('textfiled', $detaultAttributes);
-                    } elseif(is_array($vColumn)) {
-                        if (empty($vColumn['filter'])) {
+                if ($kColumn !== 'color') {
+                    if (!isset($vColumn['filter']) || $vColumn['filter'] !== false) {
+                        $columnName = $this->getColumnName($vColumn);
+                        $detaultAttributes = array(
+                            'class' => 'form-control pgv-search',
+                            'data-name' => $columnName
+                        );
+                        if (is_string($vColumn)) {
                             $filterColumn[] = app()->make('DOM')->create('textfiled', $detaultAttributes);
-                        } elseif(!empty($vColumn['filter']['type'])
-                            && is_string($vColumn['filter']['type'])) {
+                        } elseif(is_array($vColumn)) {
+                            if (empty($vColumn['filter'])) {
+                                $filterColumn[] = app()->make('DOM')->create('textfiled', $detaultAttributes);
+                            } elseif(!empty($vColumn['filter']['type'])
+                                && is_string($vColumn['filter']['type'])) {
 
-                            $value = isset($vColumn['filter']['value']) ? $vColumn['filter']['value'] : '';
-                            $data = isset($vColumn['filter']['data']) ? $vColumn['filter']['data'] : array();
-                            $filterColumn[] = app()->make('DOM')->create(
-                                $vColumn['filter']['type'],
-                                $detaultAttributes,
-                                $value,
-                                $data
-                            );
+                                $value = isset($vColumn['filter']['value']) ? $vColumn['filter']['value'] : '';
+                                $data = isset($vColumn['filter']['data']) ? $vColumn['filter']['data'] : array();
+                                $filterColumn[] = app()->make('DOM')->create(
+                                    $vColumn['filter']['type'],
+                                    $detaultAttributes,
+                                    $value,
+                                    $data
+                                );
+                            }
                         }
+                    } else {
+                        $filterColumn[] = "";
                     }
-                } else {
-                    $filterColumn[] = "";
                 }
             }
             if (!empty($filterColumn) && is_array($filterColumn)) {
@@ -294,17 +302,29 @@ class PiratesGridView
             $html = "";
             $countRow = 0;
             foreach ($model as $kModel => $vModel) {
-                $html .= "<tr class='tr-$countRow'>";
                 if (!empty($columns) && is_array($columns)) {
+                    $style = '';
+                    if (array_key_exists('color', $columns)) {
+                        if (is_string($columns['color'])) {
+                            $style = 'background-color: '.$columns['color'].';';
+                        } elseif (is_array($columns['color']) && array_key_exists('value', $columns['color'])) {
+                            $style = 'background-color: '.$columns['color']['value'].';';
+                        }
+                    }
+                    $html .= "<tr class='tr-$countRow'";
+                    $html .= !empty($style) ? " style='$style' " : "";
+                    $html .= ">";
                     $countColumn = 0;
                     foreach ($columns as $kColumn => $vColumn) {
-                        $html .= "<td class='td-row-$countRow td-column-$countColumn'>";
-                        $html .= $this->createTableField($vModel, $vColumn);
-                        $html .= "</td>";
-                        $countColumn++;
+                        if ($kColumn !== 'color') {
+                            $html .= "<td class='td-row-$countRow td-column-$countColumn'>";
+                            $html .= $this->createTableField($vModel, $vColumn);
+                            $html .= "</td>";
+                            $countColumn++;
+                        }
                     }
+                    $html .= "</tr>";
                 }
-                $html .= "</tr>";
                 $countRow++;
             }
             return $html;
@@ -333,6 +353,10 @@ class PiratesGridView
      *          raw,
      *          template,
      *      ]
+     *     color => [
+     *          'value' => '#000',
+     *          'condition' =>
+     *      ]
      *   )
      */
     private function createTableField($data='', $column='')
@@ -345,6 +369,28 @@ class PiratesGridView
                 $field = isset($data->$columnName) ? $data->$columnName : "";
             }
 
+            /* For Relation */
+            if(empty($field) && strpos($columnName, '.') !== false) {
+                $arrColumnName = explode('.', $columnName);
+                foreach ($arrColumnName as $kRelation => $vRelation) {
+                    if (empty($field)) {
+                        $field = $data->$vRelation;
+                    } else {
+                        $x = [];
+                        $arrField = $field->toArray();
+                        if (array_key_exists(0, $arrField)) { // For One to many
+                            for ($i=0; $i < sizeof($field); $i++) {
+                                $x[] = $field[$i][$vRelation];
+                            }
+                            $field = implode(", ", $x);
+                        } else { // For one to one
+                            $field = isset($field->$vRelation)
+                                ? $field->$vRelation : '';
+                        }
+                    }
+                }
+            }
+
             if (!empty($column['value'])) {
                 $columnValue = $column['value'];
                 if (is_string($columnValue)) {
@@ -353,6 +399,7 @@ class PiratesGridView
                     if (!empty($column['type'])) {
                         $field = $this->setTypeField($field, $column['type'], $data);
                     }
+
                 } elseif (is_array($columnValue)) {
                     if (!empty($column['type']) && $column['type'] == 'alias') {
                         $field = $this->setTypeField((string) $field, $column['type'], $column['value']);
@@ -372,6 +419,11 @@ class PiratesGridView
                     }
                 }
 
+            } else {
+                //Create Type
+                if (!empty($column['type'])) {
+                    $field = $this->setTypeField($field, $column['type'], $data);
+                }
             }
 
             return $field;
@@ -427,7 +479,7 @@ class PiratesGridView
                     return $value;
                     break;
                 case 'template':
-                    $data = $data->getAttributes() ? $data->getAttributes() : $data;
+                    $data = is_array($data) ? $data : $data->getAttributes();
                     foreach ($data as $kData => $vData) {
                         $value = str_replace("#$kData#", $vData, $value);
                     }

@@ -18,6 +18,7 @@ class AssignRules extends Migration
             $table->integer('rules_id')->unsigned();
             $table->foreign('assign_id')->references('id')->on('assign');
             $table->foreign('rules_id')->references('id')->on('rules');
+            $table->timestamps();
         });
     }
 

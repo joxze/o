@@ -37,6 +37,21 @@ class ServiceContainerSeeder extends Seeder
                 'path' => '\App\User',
                 'type' => 'models'
             ],
+            [
+                'name' => 'Assign',
+                'path' => '\App\Http\Models\Assign',
+                'type' => 'models'
+            ],
+            [
+                'name' => 'Rules',
+                'path' => '\App\Http\Models\Rules',
+                'type' => 'models'
+            ],
+            [
+                'name' => 'AssignRules',
+                'path' => '\App\Http\Models\AssignRules',
+                'type' => 'models'
+            ],
         ];
         $countModel = $countHelper = 0;
         foreach ($data as $key => $value) {

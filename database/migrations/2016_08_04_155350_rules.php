@@ -16,6 +16,7 @@ class Rules extends Migration
             $table->increments('id');
             $table->string('name', 50);
             $table->integer('status')->default(1);
+            $table->timestamps();
         });
     }
 

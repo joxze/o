@@ -16,6 +16,7 @@ class AssignMenu extends Migration
             $table->increments('id');
             $table->integer('assign_id');
             $table->integer('group_menu_id');
+            $table->timestamps();
         });
     }
 

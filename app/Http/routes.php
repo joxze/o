@@ -25,7 +25,11 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('users/register', 'Auth\AuthController@getRegister');
     Route::post('users/register', 'Auth\AuthController@postRegister');
     Route::get('users/detail/{id}', 'Auth\AuthController@getDetail');
-    Route::match(['get', 'post'], 'users/management', 'Auth\AuthController@getManagement');
+    Route::get('users/edit/{id}', 'Auth\AuthController@getEdit');
+    Route::post('users/edit/{id}', 'Auth\AuthController@postEdit');
+    Route::match(['get', 'post'], 'users/management', 'Auth\AuthController@getManagement')->name('userManagement');
+    Route::controller('rules', 'RulesController');
+    Route::controller('assign', 'AssignController');
     // Route::post('register', 'Auth\AuthController@postRegister');
 });
 

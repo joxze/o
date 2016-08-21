@@ -85,11 +85,45 @@ class AuthController extends Controller
         return View('auth.management', get_defined_vars());
     }
 
-    public function getDetail($id='')
+    public function getDetail($id)
     {
         if (!empty($id)) {
             $model = app()->make('User')->find($id);
             return View('auth.detail', get_defined_vars());
+        }
+    }
+
+    public function getEdit($id)
+    {
+        if (!empty($id)) {
+            $model = app()->make('User')->find($id);
+            return $this->showRegistrationForm($model);
+        }
+    }
+
+    /**
+     * proses update users
+     */
+    public function postEdit(App\Http\Requests\UpdateUsersRequest $request)
+    {
+        $post = $request->all();
+        extract($post);
+        $user = User::find($id);
+        $fileName = $this->uploadAvatar($request, $user->image);
+        $user->name = $name;
+        $user->email = $email;
+        $user->user_name = $user_name;
+        $user->rules_id = $rules_id;
+        // $user->status = $status;
+        if (!empty($password)) {
+            $user->password = bcrypt($password);
+        }
+        if (!empty($fileName)) {
+            $user->image = $fileName;
+        }
+
+        if ($user->save()) {
+            return redirect()->route('userManagement');
         }
     }
 }

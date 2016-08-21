@@ -16,8 +16,9 @@ class Assign extends Migration
             $table->increments('id');
             $table->string('controller', 200);
             $table->string('action', 200);
-            $table->string('url', 200)->nullable();
+            $table->string('name', 200)->nullable();
             $table->enum('method', ['get', 'post', 'put', 'delete', 'any']);
+            $table->timestamps();
         });
     }
 
